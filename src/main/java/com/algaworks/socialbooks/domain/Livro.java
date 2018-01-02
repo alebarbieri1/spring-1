@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.OneToMany;
 
 // Framework que o Spring utiliza para serializar os dados de retorno
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -37,7 +37,8 @@ public class Livro {
 	
 	@JsonInclude(Include.NON_NULL)
 	// O atributo será ignorado quando o Hibernate salvar a entidade no banco de dados
-	@Transient
+	//@Transient
+	@OneToMany(mappedBy = "livro")
 	private List<Comentario> comentarios;
 	
 	@JsonInclude(Include.NON_NULL)
