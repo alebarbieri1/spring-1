@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.algaworks.socialbooks.domain.Livro;
-import com.algaworks.socialbooks.repository.LivrosRepository;
+import com.algaworks.socialbooks.services.LivrosService;
+import com.algaworks.socialbooks.services.exceptions.LivroNaoEncontradoException;
 
 // Indica que a classe é um resource
 @RestController
@@ -24,7 +24,7 @@ public class LivrosResource {
 	
 	// Busca a instância da classe criada pelo Spring e insere no atributo
 	@Autowired
-	private LivrosRepository livrosRepository;
+	private LivrosService livrosService;
 	
 	// Mapeia uma URI para um determinado método
 	// value = URI
@@ -32,7 +32,7 @@ public class LivrosResource {
 	//@RequestMapping(value = "/livros", method = RequestMethod.GET)
 	@RequestMapping(method = RequestMethod.GET)
 	public ResponseEntity<List<Livro>> listar() {
-		return ResponseEntity.status(HttpStatus.OK).body(livrosRepository.findAll());
+		return ResponseEntity.status(HttpStatus.OK).body(livrosService.listar());
 	}
 	
 	// POST = criação de novos recursos
@@ -41,7 +41,7 @@ public class LivrosResource {
 	// Void pois não terá retorno, será sempre vazio
 	public ResponseEntity<Void> salvar(@RequestBody Livro livro) {
 		// Retorna o mesmo objeto com o id criado
-		livro = livrosRepository.save(livro);
+		livro = livrosService.salvar(livro);
 		
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}").buildAndExpand(livro.getId()).toUri();
@@ -53,22 +53,25 @@ public class LivrosResource {
 	// Pega o valor recebido na URI e insere na variável id
 	// ResponseEntity = responsável por encapsular o objeto de retorno e de manipular informações do HTTP
 	// ? = encapsula qualquer tipo de objeto. Ou seja, ? = qualquer tipo
-	@RequestMapping(value= "/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> buscar(@PathVariable("id") Long id) {
-		Livro livro = livrosRepository.findOne(id);
-		if (livro == null) {
+		Livro livro;
+		try {
+			livro = livrosService.buscar(id);
+		} catch (LivroNaoEncontradoException e) {
 			// build = constrói a entidade de resposta sem nada no body
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(livro);
 	}
+		
 	
 	// Pega o valor recebido na URI e insere na variável id
 	@RequestMapping(value= "/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> remover(@PathVariable("id") Long id) {
 		try {
-			livrosRepository.delete(id);
-		}  catch (EmptyResultDataAccessException e) {
+			livrosService.remover(id);
+		}  catch (LivroNaoEncontradoException e) {
 			// Caso não exista, retorna not found (http 404)
 			return ResponseEntity.notFound().build();
 		}
@@ -81,8 +84,11 @@ public class LivrosResource {
 	public ResponseEntity<Void> atualizar(@RequestBody Livro livro, @PathVariable("id") Long id) {
 		// Garante que o recurso a ser atualizado é o que está sendo passado no corpo da URI e não no corpo da mensagem
 		livro.setId(id);
-		// Se a entidade a ser persistida já existir no banco de dados, ela será atualizada, senão, será criada
-		livrosRepository.save(livro);
+		try {
+			livrosService.atualizar(livro);
+		} catch(LivroNaoEncontradoException e) {
+			return ResponseEntity.notFound().build();
+		}
 		
 		return ResponseEntity.noContent().build();
 	}
