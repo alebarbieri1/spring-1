@@ -15,7 +15,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.algaworks.socialbooks.domain.Livro;
 import com.algaworks.socialbooks.services.LivrosService;
-import com.algaworks.socialbooks.services.exceptions.LivroNaoEncontradoException;
 
 // Indica que a classe é um resource
 @RestController
@@ -55,13 +54,7 @@ public class LivrosResource {
 	// ? = encapsula qualquer tipo de objeto. Ou seja, ? = qualquer tipo
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> buscar(@PathVariable("id") Long id) {
-		Livro livro;
-		try {
-			livro = livrosService.buscar(id);
-		} catch (LivroNaoEncontradoException e) {
-			// build = constrói a entidade de resposta sem nada no body
-			return ResponseEntity.notFound().build();
-		}
+		Livro livro = livrosService.buscar(id);
 		return ResponseEntity.status(HttpStatus.OK).body(livro);
 	}
 		
@@ -69,12 +62,7 @@ public class LivrosResource {
 	// Pega o valor recebido na URI e insere na variável id
 	@RequestMapping(value= "/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> remover(@PathVariable("id") Long id) {
-		try {
-			livrosService.remover(id);
-		}  catch (LivroNaoEncontradoException e) {
-			// Caso não exista, retorna not found (http 404)
-			return ResponseEntity.notFound().build();
-		}
+		livrosService.remover(id);
 		// Se existir, retorna no content (http 204)
 		// No Content: indica que a solicitação foi bem sucedida
 		return ResponseEntity.noContent().build();
@@ -84,12 +72,7 @@ public class LivrosResource {
 	public ResponseEntity<Void> atualizar(@RequestBody Livro livro, @PathVariable("id") Long id) {
 		// Garante que o recurso a ser atualizado é o que está sendo passado no corpo da URI e não no corpo da mensagem
 		livro.setId(id);
-		try {
-			livrosService.atualizar(livro);
-		} catch(LivroNaoEncontradoException e) {
-			return ResponseEntity.notFound().build();
-		}
-		
+		livrosService.atualizar(livro);		
 		return ResponseEntity.noContent().build();
 	}
 }
