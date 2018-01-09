@@ -10,7 +10,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 // Framework que o Spring utiliza para serializar os dados de retorno
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -25,19 +30,25 @@ public class Livro {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	@NotEmpty(message = "Campo nome é obrigatório.")
 	@JsonInclude(Include.NON_NULL)
 	private String nome;
 	
+	@NotNull(message = "Campo publicacao é obrigatório.")
+	@JsonFormat(pattern = "dd/MM/yyyy")
 	@JsonInclude(Include.NON_NULL)
 	private Date publicacao;
 	
+	@NotNull(message = "Campo editora é obrigatório.")
 	@JsonInclude(Include.NON_NULL)
 	private String editora;
 	
+	@NotEmpty(message = "Campo resumo é obrigatório.")
+	@Size(max = 1500, message = "Campo resumo não pode conter mais de 1500 caracteres.")
 	@JsonInclude(Include.NON_NULL)
 	private String resumo;
 	
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	// O atributo será ignorado quando o Hibernate salvar a entidade no banco de dados
 	//@Transient
 	@OneToMany(mappedBy = "livro")

@@ -3,6 +3,8 @@ package com.algaworks.socialbooks.resources;
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +41,7 @@ public class LivrosResource {
 	// @RequestBody = faz com que o Spring pegue o que está vindo na requisição e coloque as informações no objeto Livro
 	@RequestMapping(method = RequestMethod.POST)
 	// Void pois não terá retorno, será sempre vazio
-	public ResponseEntity<Void> salvar(@RequestBody Livro livro) {
+	public ResponseEntity<Void> salvar(@Valid @RequestBody Livro livro) {
 		// Retorna o mesmo objeto com o id criado
 		livro = livrosService.salvar(livro);
 		

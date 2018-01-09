@@ -2,6 +2,7 @@ package com.algaworks.socialbooks.handler;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -51,5 +52,17 @@ public class ResourceExceptionHandler {
 		erro.setTimestamp(System.currentTimeMillis());
 		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+	}
+	
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<DetalhesErro> handleDataIntegrityViolationException
+	(DataIntegrityViolationException e, HttpServletRequest request){
+		DetalhesErro erro = new DetalhesErro();
+		erro.setStatus(Long.valueOf(HttpStatus.BAD_REQUEST.value()));
+		erro.setTitulo(e.getMessage());
+		erro.setMensagemDesenvolvedor("Localização das informações referentes a esse erro.");
+		erro.setTimestamp(System.currentTimeMillis());
+		
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
 	}
 }

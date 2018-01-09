@@ -8,8 +8,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 public class Autor {
@@ -18,14 +24,22 @@ public class Autor {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	@NotEmpty(message = "Campo nome é obrigatório.")
+	@JsonInclude(Include.NON_NULL)
 	private String nome;
 	
+	@JsonFormat(pattern = "dd/MM/yyyy")
+	@NotNull(message = "Campo nascimento é obrigatório.")
+	@JsonInclude(Include.NON_NULL)
 	private Date nascimento;
 	
+	@NotNull(message = "Campo nacionalidade é obrigatório.")
+	@JsonInclude(Include.NON_NULL)
 	private String nacionalidade;
 	
 	@OneToMany(mappedBy = "autor")
 	@JsonIgnore
+	@JsonInclude(Include.NON_NULL)
 	private List<Livro> livros;
 
 	public Long getId() {
