@@ -2,12 +2,16 @@ package com.algaworks.socialbooks.resources;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +62,12 @@ public class LivrosResource {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Livro> buscar(@PathVariable("id") Long id) {
 		Livro livro = livrosService.buscar(id);
-		return ResponseEntity.status(HttpStatus.OK).body(livro);
+		
+		// Tempo em que a resposta da requisição que foi enviada ao cliente continua sendo válida (não é requisitado ao servidor até que esse tempo expire)
+		// Header no cabeçalho de resposta: cache-control -> max-age=20
+		CacheControl cacheControl = CacheControl.maxAge(20, TimeUnit.SECONDS);
+		
+		return ResponseEntity.status(HttpStatus.OK).cacheControl(cacheControl).body(livro);
 	}
 		
 	
@@ -83,6 +92,12 @@ public class LivrosResource {
 	@RequestMapping(value = "/{id}/comentarios", method = RequestMethod.POST)
 	public ResponseEntity<Void> adicionarComentario(@PathVariable("id") Long livroId, 
 			@RequestBody Comentario comentario) {
+		
+		// Retorna o objeto que contém informações do usuário que está autenticado
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		comentario.setUsuario(auth.getName());
+		
 		livrosService.salvarComentario(livroId, comentario);
 		
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().build().toUri();
