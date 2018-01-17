@@ -1,6 +1,7 @@
 package com.algaworks.socialbooks.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +22,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests()
 		// Não vai requisitar autenticação nessa URI
 		.antMatchers("/h2-console/**").permitAll()
+		// Permitir qualquer chamada de OPTIONS sem autenticação
+		/*
+		 * O método HTTP OPTIONS é utilizado para que um cliente possa descobrir quais as opções
+		 * de requisição permitidas para um determinado recurso em um servidor. 
+		 */
+		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		.anyRequest().authenticated()
 		.and()
 			.httpBasic()
